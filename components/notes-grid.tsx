@@ -1,13 +1,9 @@
 import React from 'react'
 import { Row, Col, Card } from 'antd'
-
-interface Note {
-    date: string
-    content: string
-}
+import type { NoteSerializable } from '../models/note'
 
 interface NotesGridProps {
-    notes: Array<Note>
+    notes: Array<NoteSerializable>
 }
 
 const NotesGrid = ({ notes }: NotesGridProps) => {

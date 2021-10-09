@@ -1,49 +1,48 @@
 import React from 'react'
 import { Layout, Menu, Breadcrumb, Typography, Badge } from 'antd'
+import { GetServerSideProps } from 'next'
 import NotesGrid from '../../components/notes-grid'
+import dbConnect from '../../lib/dbConnect'
+import NoteModel from '../../models/note'
+import type { NoteSerializable } from '../../models/note'
 
 const { Header, Content, Footer, Sider } = Layout
 const { Title } = Typography
 
-interface Note {
-    date: string
-    content: string
+
+interface NotesPageProps {
+    notes: Array<NoteSerializable>
 }
 
-const notes: Array<Note> = [
-    {
-        date: '2021-10-02',
-        content: '# Test Note'
-    },
-    {
-        date: '2021-10-03',
-        content: '# Test Note 2'
-    },
-    {
-        date: '2021-10-04',
-        content: '# Test Note 3'
-    },
-    {
-        date: '2021-10-05',
-        content: '# Test Note 4'
-    },
-]
 
+const NotesPage = ({ notes }: NotesPageProps) => {
+    return (
+        <>
+            <Header className='site-layout-background' style={{ padding: 8 }} >
+                <Title>Notes</Title>
+            </Header>
 
-class Notes extends React.Component {
-    render() {
-        return (
-            <>
-                <Header className='site-layout-background' style={{ padding: 8 }} >
-                    <Title>Notes</Title>
-                </Header>
-
-                <Content style={{ margin: '16px' }}>
-                    <NotesGrid notes={notes} />
-                </Content>
-            </>
-        )
-    }
+            <Content style={{ margin: '16px' }}>
+                <NotesGrid notes={notes} />
+            </Content>
+        </>
+    )
 }
 
-export default Notes
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    await dbConnect()
+
+    const result = await NoteModel.find({})
+    const notes = result.map((doc) => {
+        const note = doc.toObject()
+
+        note._id = note._id.toString()
+        note.date = note.date.toISOString()
+
+        return note
+    })
+
+    return { props: { notes: notes } }
+}
+
+export default NotesPage
